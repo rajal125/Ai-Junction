@@ -1,9 +1,22 @@
+import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Brain, Cpu, Shield, Zap, Code, Globe, Activity, Layers, Lock, Search, TrendingUp, Sparkles, Filter, ExternalLink } from 'lucide-react';
+import { ArrowRight, Brain, Cpu, Shield, Zap, Code, Globe, Activity, Layers, Lock, Search, TrendingUp, Sparkles, Filter, ExternalLink, Loader2 } from 'lucide-react';
 import { SplineScene } from '@/components/ui/splite';
 import { Spotlight } from '@/components/ui/spotlight';
+import { useNavigate } from 'react-router-dom';
 
 export function HeroSection() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/tools?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
       {/* Subtle background glow */}
@@ -45,17 +58,22 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="w-full max-w-xl"
           >
-            <div className="flex items-center gap-3 p-2 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-xl group focus-within:border-blue-500/50 transition-all duration-300">
+            <form onSubmit={handleSearch} className="flex items-center gap-3 p-2 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-xl group focus-within:border-blue-500/50 transition-all duration-300 shadow-2xl">
               <Search className="w-5 h-5 text-neutral-500 ml-3" />
               <input 
                 type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for AI tools (e.g. Logo Maker, Code Assistant)..." 
                 className="bg-transparent border-none outline-none text-white w-full py-3 text-sm md:text-base placeholder:text-neutral-600"
               />
-              <button className="hidden sm:block px-6 py-3 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-500 transition-all duration-300 shadow-[0_0_15px_rgba(37,99,235,0.3)]">
-                Search
+              <button 
+                type="submit"
+                className="hidden sm:flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 transition-all duration-300 shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Search <ArrowRight className="w-4 h-4" />
               </button>
-            </div>
+            </form>
           </motion.div>
 
           <motion.div 
@@ -64,10 +82,16 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
           >
-            <button className="w-full sm:w-auto px-8 py-4 rounded-full bg-white text-black font-medium hover:bg-neutral-100 transition-all duration-300 hover:scale-[1.03] shadow-[0_0_20px_rgba(255,255,255,0.15)] flex items-center justify-center gap-2">
+            <button 
+              onClick={() => navigate('/tools')}
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-white text-black font-medium hover:bg-neutral-100 transition-all duration-300 hover:scale-[1.03] shadow-[0_0_20px_rgba(255,255,255,0.15)] flex items-center justify-center gap-2"
+            >
               Explore Tools <ArrowRight className="w-4 h-4" />
             </button>
-            <button className="w-full sm:w-auto px-8 py-4 rounded-full bg-transparent border border-white/[0.15] text-white font-medium hover:bg-white/[0.05] hover:border-white/30 transition-all duration-300 flex items-center justify-center gap-2">
+            <button 
+              onClick={() => navigate('/join')}
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-transparent border border-white/[0.15] text-white font-medium hover:bg-white/[0.05] hover:border-white/30 transition-all duration-300 flex items-center justify-center gap-2"
+            >
               Join Us
             </button>
           </motion.div>
@@ -170,6 +194,7 @@ export function ShowcaseSection() {
 
 
 export function CategoriesSection() {
+  const navigate = useNavigate();
   const categories = [
     { name: "Design", icon: Layers, count: "120+" },
     { name: "Writing", icon: Code, count: "85+" },
@@ -189,7 +214,10 @@ export function CategoriesSection() {
             <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 text-white">Explore by Category</h2>
             <p className="text-xl text-neutral-400">Find the right AI tool tailored for your specific workflow or industry.</p>
           </div>
-          <button className="flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium transition-colors">
+          <button 
+            onClick={() => navigate('/tools')}
+            className="flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium transition-colors"
+          >
             View All Categories <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -199,6 +227,7 @@ export function CategoriesSection() {
             <motion.div
               key={idx}
               whileHover={{ y: -5, scale: 1.02 }}
+              onClick={() => navigate(`/tools?q=${encodeURIComponent(cat.name)}`)}
               className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-blue-500/30 transition-all duration-300 cursor-pointer group"
             >
               <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 group-hover:bg-blue-500/20 transition-colors">
@@ -215,12 +244,24 @@ export function CategoriesSection() {
 }
 
 export function FeaturedToolsSection() {
-  const tools = [
-    { name: "Jasper", category: "Writing", rating: 4.8, price: "Paid", desc: "Advanced AI writing assistant for marketing teams.", logo: "https://picsum.photos/seed/jasper/100/100" },
-    { name: "Midjourney", category: "Design", rating: 4.9, price: "Paid", desc: "High-quality AI image generation via Discord.", logo: "https://picsum.photos/seed/mid/100/100" },
-    { name: "GitHub Copilot", category: "Coding", rating: 4.7, price: "Paid", desc: "AI-powered code suggestions and completions.", logo: "https://picsum.photos/seed/copilot/100/100" },
-    { name: "Synthesia", category: "Video", rating: 4.6, price: "Paid", desc: "Create AI videos from text in minutes.", logo: "https://picsum.photos/seed/synth/100/100" },
-  ];
+  const [tools, setTools] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const res = await fetch('/api/tools');
+        const data = await res.json();
+        // Just take the top 4 for the featured section
+        setTools(data.slice(0, 4));
+      } catch (err) {
+        console.error('Failed to fetch featured tools:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFeatured();
+  }, []);
 
   return (
     <section className="py-24 bg-white/[0.01]">
@@ -231,33 +272,44 @@ export function FeaturedToolsSection() {
         </div>
         <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-12 text-white">Featured AI Tools</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {tools.map((tool, idx) => (
-            <div key={idx} className="group flex flex-col p-5 rounded-3xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-md hover:bg-white/[0.06] transition-all duration-500">
-              <div className="flex items-start justify-between mb-6">
-                <div className="w-14 h-14 rounded-2xl bg-white/5 overflow-hidden border border-white/10 group-hover:scale-105 transition-transform">
-                  <img src={tool.logo} alt={tool.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {tools.map((tool, idx) => (
+              <div key={idx} className="group flex flex-col p-5 rounded-3xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-md hover:bg-white/[0.06] transition-all duration-500">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="w-14 h-14 rounded-2xl bg-white/5 overflow-hidden border border-white/10 group-hover:scale-105 transition-transform flex items-center justify-center">
+                    <img 
+                      src={`https://picsum.photos/seed/${tool.name.toLowerCase()}/100/100`} 
+                      alt={tool.name} 
+                      className="w-full h-full object-cover" 
+                      referrerPolicy="no-referrer" 
+                    />
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <div className="px-2 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400 font-bold uppercase mb-2">
+                      {tool.pricing}
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-yellow-500 font-bold">
+                      ★ {tool.rating}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-col items-end">
-                  <div className="px-2 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400 font-bold uppercase mb-2">
-                    {tool.price}
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-yellow-500 font-bold">
-                    ★ {tool.rating}
-                  </div>
+                <h3 className="text-xl font-bold text-white mb-2">{tool.name}</h3>
+                <p className="text-sm text-neutral-400 mb-6 flex-grow">{tool.desc}</p>
+                <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                  <span className="text-xs text-neutral-500 font-medium">{tool.category}</span>
+                  <button className="flex items-center gap-1.5 text-xs text-white hover:text-blue-400 transition-colors font-semibold group/btn">
+                    Visit <ExternalLink className="w-3 h-3 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                  </button>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">{tool.name}</h3>
-              <p className="text-sm text-neutral-400 mb-6 flex-grow">{tool.desc}</p>
-              <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                <span className="text-xs text-neutral-500 font-medium">{tool.category}</span>
-                <button className="flex items-center gap-1.5 text-xs text-white hover:text-blue-400 transition-colors font-semibold group/btn">
-                  Visit <ExternalLink className="w-3 h-3 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -338,12 +390,12 @@ export function Footer() {
     <footer className="py-16 border-t border-white/5 bg-[#020202]">
       <div className="max-w-[1400px] mx-auto px-6 grid grid-cols-2 md:grid-cols-6 gap-8 mb-16">
         <div className="col-span-2 md:col-span-2">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.4)]">
-              <div className="w-3 h-3 bg-white rounded-full" />
+          <a href="/" className="flex items-center gap-3 mb-6 cursor-pointer group">
+            <div className="w-8 h-8 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+              <img src="/logo.png" alt="Ai Junction Logo" className="w-full h-full object-contain mix-blend-screen contrast-125" />
             </div>
-            <span className="text-white font-semibold text-xl tracking-tight">Ai Junction</span>
-          </div>
+            <span className="text-white font-semibold text-xl tracking-tight group-hover:text-blue-400 transition-colors">Ai Junction</span>
+          </a>
           <p className="text-neutral-500 max-w-xs leading-relaxed">
             The world's premium directory for 3D animated AI platforms. Discover, compare, and explore the future of intelligence.
           </p>

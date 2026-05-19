@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const navLinks = [
   { name: 'Home', href: '/' },
@@ -33,14 +34,14 @@ export function Navbar() {
     >
       <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer group">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-indigo-500 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.4)] group-hover:shadow-[0_0_20px_rgba(59,130,246,0.6)] transition-shadow duration-300">
-            <div className="w-3 h-3 bg-white rounded-full" />
+        <Link to="/" className="flex-shrink-0 flex items-center gap-2 cursor-pointer group">
+          <div className="w-7 h-7 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+            <img src="/logo.png" alt="Ai Junction Logo" className="w-full h-full object-contain mix-blend-screen contrast-125 brightness-110" />
           </div>
           <span className="text-white font-bold text-xl tracking-tight bg-clip-text">
             Ai Junction
           </span>
-        </div>
+        </Link>
 
         {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center gap-8">

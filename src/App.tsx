@@ -1,4 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import * as React from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
 import { Navbar } from "@/components/navbar";
 import { Chatbot } from "@/components/chatbot";
 import { 
@@ -10,7 +12,8 @@ import {
   Footer 
 } from "@/components/landing";
 import { motion } from 'framer-motion';
-import { Search, Filter, Sparkles, TrendingUp, Info, UserPlus, Mail, ArrowRight, ExternalLink, Zap, Globe, Shield, Activity, Cpu, Layers, Code } from 'lucide-react';
+import { Search, Filter, Sparkles, TrendingUp, Info, UserPlus, Mail, ArrowRight, ExternalLink, Zap, Globe, Shield, Activity, Cpu, Layers, Code, Loader2 } from 'lucide-react';
+import { Tool } from './types';
 
 function HomePage() {
   return (
@@ -25,50 +28,109 @@ function HomePage() {
 }
 
 function ToolsPage() {
-  const tools = [
-    { name: "ChatGPT", category: "Writing", pricing: "Freemium", desc: "The world's most popular AI chatbot.", rating: 4.9 },
-    { name: "Claude", category: "Writing", pricing: "Freemium", desc: "Next-gen AI assistant with advanced reasoning.", rating: 4.8 },
-    { name: "Luma Dream Machine", category: "Video", pricing: "Paid", desc: "Create high-quality videos from text/images.", rating: 4.7 },
-    { name: "Cursor", category: "Coding", pricing: "Paid", desc: "The AI code editor for efficient engineering.", rating: 4.9 },
-    { name: "Perplexity", category: "Search", pricing: "Freemium", desc: "AI-powered search engine for accurate answers.", rating: 4.8 },
-    { name: "Canva AI", category: "Design", pricing: "Freemium", desc: "Magic Studio for seamless design automation.", rating: 4.6 },
-  ];
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [tools, setTools] = useState<Tool[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTools = async () => {
+      try {
+        const res = await fetch('/api/tools');
+        const data = await res.json();
+        setTools(data);
+      } catch (err) {
+        console.error('Failed to fetch tools:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTools();
+  }, []);
+
+  const filteredTools = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return tools;
+    return tools.filter(tool => 
+      tool.name.toLowerCase().includes(q) || 
+      tool.category.toLowerCase().includes(q) || 
+      tool.desc.toLowerCase().includes(q)
+    );
+  }, [searchQuery, tools]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+    setSearchParams(val ? { q: val } : {});
+  };
 
   return (
     <div className="pt-32 pb-24 min-h-screen">
       <div className="max-w-[1400px] mx-auto px-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
           <div>
-            <h1 className="text-5xl font-bold tracking-tighter text-white mb-4">All AI Tools</h1>
-            <p className="text-xl text-neutral-400">Browse through our exhaustive directory of expert-reviewed AI platforms.</p>
+            <h1 className="text-5xl font-bold tracking-tighter text-white mb-4">
+              {searchQuery ? `Search Results for "${searchQuery}"` : "All AI Tools"}
+            </h1>
+            <p className="text-xl text-neutral-400">
+              {loading ? "Discovering intelligence..." : `${filteredTools.length} ${filteredTools.length === 1 ? 'tool' : 'tools'} found in our directory.`}
+            </p>
           </div>
           <div className="flex gap-4">
             <div className="relative group">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
-              <input type="text" placeholder="Search tools..." className="bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors w-64" />
+              <input 
+                type="text" 
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search tools..." 
+                className="bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors w-64 shadow-lg backdrop-blur-md" 
+              />
             </div>
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white hover:bg-white/10 transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white hover:bg-white/10 transition-colors backdrop-blur-md">
               <Filter className="w-4 h-4" /> Filter
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tools.map((tool, idx) => (
-            <div key={idx} className="p-6 rounded-3xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500 bg-blue-500/10 px-2 py-1 rounded-full">{tool.pricing}</span>
-                <span className="text-xs text-yellow-500 font-bold">★ {tool.rating}</span>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">{tool.name}</h3>
-              <p className="text-sm text-neutral-400 mb-6">{tool.desc}</p>
-              <div className="flex items-center justify-between pt-4 border-t border-white/5 uppercase tracking-tighter text-[10px] font-bold text-neutral-500">
-                <span>{tool.category}</span>
-                <button className="text-white hover:text-blue-500 transition-colors flex items-center gap-1">Visit <ExternalLink className="w-3 h-3"/></button>
-              </div>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-24 gap-4">
+            <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+            <p className="text-neutral-500 animate-pulse">Connecting to neural database...</p>
+          </div>
+        ) : filteredTools.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTools.map((tool, idx) => (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                key={idx} 
+                className="p-6 rounded-3xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-all duration-300 group"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500 bg-blue-500/10 px-2 py-1 rounded-full">{tool.pricing}</span>
+                  <span className="text-xs text-yellow-500 font-bold">★ {tool.rating}</span>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">{tool.name}</h3>
+                <p className="text-sm text-neutral-400 mb-6">{tool.desc}</p>
+                <div className="flex items-center justify-between pt-4 border-t border-white/5 uppercase tracking-tighter text-[10px] font-bold text-neutral-500">
+                  <span>{tool.category}</span>
+                  <button className="text-white hover:text-blue-500 transition-colors flex items-center gap-1">Visit <ExternalLink className="w-3 h-3"/></button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-24 text-center">
+            <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6">
+              <Search className="w-8 h-8 text-neutral-600" />
             </div>
-          ))}
-        </div>
+            <h2 className="text-2xl font-bold text-white mb-2">No tools found</h2>
+            <p className="text-neutral-500">Try adjusting your search query or browse categories.</p>
+          </div>
+        )}
       </div>
     </div>
   );
